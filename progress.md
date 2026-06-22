@@ -35,7 +35,7 @@
 - Confirm page relies on supabase-js auto-parsing the `#access_token` hash; no manual URL parsing needed
 
 **Gotchas hit:**
-- None — Phase 1 shared helpers and supabase-js client were already in place
+- `handle_new_user()` trigger failed with "Database error saving new user" (500) — root cause: `security definer` functions in Supabase require `set search_path = ''` and explicit `public.` schema prefix in INSERT statements. Fixed in migration 004.
 
 **Open / next:**
 - Supabase dashboard: allowlist `http://localhost:5173/confirm` in Auth → URL Configuration before testing email confirmation

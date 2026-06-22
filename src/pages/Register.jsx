@@ -22,7 +22,7 @@ export default function Register() {
     setLoading(false)
 
     if (result.error) {
-      setError(result.error.message || JSON.stringify(result.error))
+      setError(result.error.message || result.error.error_description || 'Registration failed')
     } else {
       setSuccess(true)
     }
