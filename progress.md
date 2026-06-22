@@ -7,10 +7,41 @@
 
 ## Current status
 
-- **Phase:** 2 — Auth (next)
+- **Phase:** 4 — The engine (next)
 - **Day:** Tuesday
-- **Next action:** build full auth lifecycle — Register, Login, Logout, email confirmation, AuthContext, protected route guard.
+- **Next action:** build `execute/index.ts` — verify JWT → load test_cases → Judge0 async submit + poll → grade → update submission row → award XP on first pass. Test with curl before wiring frontend.
 - **Blockers:** none.
+
+---
+
+## 2026-06-22 — Phase 2: Auth
+
+**Goal this session:** full auth lifecycle — Register, Login, Logout, email confirmation, AuthContext, protected route guard.
+
+**Done:**
+- `src/state/AuthContext.jsx` — AuthProvider with register/login/logout; tracks user + session; `onAuthStateChange` subscription
+- `src/components/ProtectedRoute.jsx` — redirects unauthenticated users to /login; shows nothing while session loads
+- `src/App.jsx` — wrapped in AuthProvider; protected routes for /, /quest/:id, /profile
+- `src/pages/Login.jsx` — email/password form, inline error, navigate to / on success
+- `src/pages/Register.jsx` — username/email/password form, success state shows "check your email"
+- `src/pages/Confirm.jsx` — waits for supabase-js to parse hash fragment via onAuthStateChange, redirects to / on success, shows error if link expired
+- `src/pages/QuestBoard.jsx` — minimal logout button wired to useAuth().logout (enables end-to-end cycle test)
+- Smoke test: dev server serves HTML, no compile errors
+
+**Decisions made:**
+- Register passes `username` in `options.data` so the Phase 1 profile trigger picks it up from `raw_user_meta_data`
+- `emailRedirectTo` is `window.location.origin + '/confirm'` — works for both localhost and Vercel without hardcoding
+- ProtectedRoute returns null while loading (not a spinner) — avoids flash of redirect on refresh
+- Confirm page relies on supabase-js auto-parsing the `#access_token` hash; no manual URL parsing needed
+
+**Gotchas hit:**
+- None — Phase 1 shared helpers and supabase-js client were already in place
+
+**Open / next:**
+- Supabase dashboard: allowlist `http://localhost:5173/confirm` in Auth → URL Configuration before testing email confirmation
+- Phase 4: `execute/index.ts` (Judge0 engine) — prove via curl before wiring frontend
+
+**Phase status:** complete → moving to Phase 4
 
 ---
 
