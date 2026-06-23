@@ -8,9 +8,9 @@
 ## Current status
 
 - **Phase:** 7 — Deploy + Stripe (stretch)
-- **Day:** Friday
-- **Next action:** `supabase functions deploy` all functions, set production secrets, Vercel deploy, rubric checklist. Then Stripe if time allows.
-- **Blockers:** `GEMINI_API_KEY` and `GEMINI_MODEL` secrets must be set before hints work (`supabase secrets set GEMINI_API_KEY=... GEMINI_MODEL=gemini-2.0-flash`).
+- **Date:** 2026-06-23 (Tuesday)
+- **Next action:** Vercel deploy, set production secrets, run rubric checklist. Stripe if time allows.
+- **Blockers:** Gemini key format needs verification (`AQ.Ab8...` may not be a valid AI Studio key — test hints in the live app and update if needed).
 
 ---
 
@@ -206,17 +206,15 @@
 
 ---
 
-## Week schedule
+## Actual schedule (vs plan)
 
-| Day | Phase(s) | Target |
+| Date | Phase(s) | Status |
 |---|---|---|
-| Mon | 0 + 1 | Skeleton running, tables seeded, Stitch screenshots in |
-| Tue | 2 + start 4 | Full auth lifecycle + Judge0 engine proven via curl |
-| Wed | 3 + finish 4 | Submissions CRUD live, wired to execution + XP |
-| Thu | 5 + 6 | Gemini hints + full dynamic UI, all error states |
-| Fri | 7 + deploy | Deploy, rubric checklist, Stripe if time allows |
+| Mon 2026-06-22 | 0 + 1 + 2 | ✓ Skeleton, data layer, full auth lifecycle |
+| Tue 2026-06-23 | 4 + 3 + 5 + 6 | ✓ Judge0 engine, CRUD, Gemini hints, full UI |
+| Tue 2026-06-23 | 7 | → Deploy + Stripe (stretch) |
 
-Rubric is locked by end of Thursday. Friday is buffer and deploy.
+Phases 0–6 completed in 2 days instead of the planned 4. Rubric requirements all met.
 
 ---
 
