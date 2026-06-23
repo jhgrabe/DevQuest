@@ -31,13 +31,21 @@ export async function deleteSubmission(id) {
   await api.delete(`/rest/v1/submissions?id=eq.${id}`)
 }
 
-export async function executeSubmission(questId, submissionId, sourceCode) {
+export async function executeSubmission(questId, submissionId, sourceCode, refine = false) {
   const res = await api.post('/functions/v1/execute', {
     quest_id: questId,
     submission_id: submissionId,
     source_code: sourceCode,
+    ...(refine ? { refine: true } : {}),
   })
   return res.data
+}
+
+export async function getCompletedQuestIds(userId) {
+  const res = await api.get(
+    `/rest/v1/submissions?user_id=eq.${userId}&status=eq.passed&select=quest_id`,
+  )
+  return new Set(res.data.map(s => s.quest_id))
 }
 
 export async function getHint(submissionId, questId, sourceCode, stderr) {

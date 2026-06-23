@@ -1089,6 +1089,88 @@ button { cursor: pointer; font-family: inherit; }
 .gap-8 { gap: 8px; }
 .gap-12 { gap: 12px; }
 
+/* ── Quest completion ────────────────────────────────────────── */
+.quest-hero__completed {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  border-radius: var(--r-sm);
+  color: var(--success);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+}
+.quest-hero__completed svg { width: 12px; height: 12px; }
+
+.quest-card--completed { border-color: rgba(16, 185, 129, 0.25); }
+.quest-card--completed:hover { border-color: rgba(16, 185, 129, 0.45); }
+.quest-card--completed .quest-card__status-dot { display: none; }
+
+.quest-card__completed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--success);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+.quest-card__completed-badge svg { width: 13px; height: 13px; }
+
+/* Refine button */
+.btn-refine {
+  background: transparent;
+  border: 1px solid var(--success-border);
+  color: var(--success);
+}
+.btn-refine:hover:not(:disabled) { background: var(--success-bg); text-decoration: none; }
+
+/* ── Toast notification ──────────────────────────────────────── */
+@keyframes toast-show {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(16px); }
+  12%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  82%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(8px); }
+}
+
+.toast {
+  position: fixed;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  background: var(--surface-higher);
+  border: 1px solid var(--success-border);
+  border-radius: var(--r);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.5), 0 0 24px rgba(16,185,129,0.12);
+  animation: toast-show 4s ease forwards;
+  pointer-events: none;
+  min-width: 240px;
+}
+.toast svg { width: 20px; height: 20px; color: var(--success); flex-shrink: 0; }
+.toast-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--success);
+  line-height: 1.3;
+}
+.toast-sub {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
 /* ── Scrollbar ─────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }

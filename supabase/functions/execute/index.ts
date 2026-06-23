@@ -89,7 +89,7 @@ Deno.serve(async (req: Request) => {
       })
     }
 
-    const { quest_id, submission_id, source_code } = body
+    const { quest_id, submission_id, source_code, refine } = body
     if (!quest_id || !submission_id || !source_code) {
       return new Response(
         JSON.stringify({ error: 'quest_id, submission_id, and source_code are required' }),
@@ -176,6 +176,21 @@ Deno.serve(async (req: Request) => {
           .eq('user_id', user.id)
 
         xpAwarded = quest.xp_reward
+      } else if (refine) {
+        const refineXp = Math.floor(quest.xp_reward * 0.25)
+        const { data: profile } = await serviceClient
+          .from('profiles')
+          .select('xp')
+          .eq('user_id', user.id)
+          .single()
+
+        const newXp = (profile?.xp ?? 0) + refineXp
+        await serviceClient
+          .from('profiles')
+          .update({ xp: newXp })
+          .eq('user_id', user.id)
+
+        xpAwarded = refineXp
       }
     }
 

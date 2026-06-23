@@ -115,6 +115,7 @@ export default function QuestDetail() {
   const [submitError, setSubmitError] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [toast, setToast] = useState(null)
 
   useEffect(() => {
     async function load() {
@@ -142,7 +143,12 @@ export default function QuestDetail() {
     return quest.preamble ? `${quest.preamble}\n${code}` : code
   }
 
-  async function handleSubmit() {
+  function showToast(message) {
+    setToast(message)
+    setTimeout(() => setToast(null), 4000)
+  }
+
+  async function handleSubmit(refine = false) {
     setSubmitting(true)
     setSubmitError(null)
     setResult(null)
@@ -162,9 +168,16 @@ export default function QuestDetail() {
         subId = sub.id
       }
 
-      const res = await executeSubmission(questId, subId, fullCode())
+      const res = await executeSubmission(questId, subId, fullCode(), refine)
       setResult(res)
       setEditingId(null)
+
+      if (res.passed) {
+        showToast(res.xp_awarded > 0
+          ? { title: 'Quest Complete!', sub: `+${res.xp_awarded} XP awarded` }
+          : { title: 'Quest Passed!', sub: 'Skills refined' }
+        )
+      }
 
       const subs = await getSubmissions(questId)
       setSubmissions(subs)
@@ -245,6 +258,7 @@ export default function QuestDetail() {
 
   const diff = (quest.difficulty ?? '').toLowerCase()
   const shortId = questShortId(quest.id)
+  const hasCompleted = submissions.some(s => s.status === 'passed')
   const editingAttemptNum = editingId
     ? submissions.length - submissions.findIndex(s => s.id === editingId)
     : null
@@ -271,6 +285,11 @@ export default function QuestDetail() {
             {quest.estimated_minutes && (
               <span className="quest-hero__time">
                 <ClockIcon /> ~{quest.estimated_minutes}m
+              </span>
+            )}
+            {hasCompleted && (
+              <span className="quest-hero__completed">
+                <CheckSmall /> Completed
               </span>
             )}
           </div>
@@ -346,14 +365,25 @@ export default function QuestDetail() {
                 </span>
               </div>
             )}
-            <button
-              className="btn btn-primary btn-full"
-              onClick={handleSubmit}
-              disabled={submitting || !code.trim()}
-            >
-              <PlayIcon />
-              {submitting ? 'Running…' : editingId ? 'Update & Run' : 'Submit Code'}
-            </button>
+            {hasCompleted && !editingId ? (
+              <button
+                className="btn btn-refine btn-full"
+                onClick={() => handleSubmit(true)}
+                disabled={submitting || !code.trim()}
+              >
+                <RefreshIcon />
+                {submitting ? 'Running…' : `Refine your skills (+${Math.floor(quest.xp_reward * 0.25)} XP)`}
+              </button>
+            ) : (
+              <button
+                className="btn btn-primary btn-full"
+                onClick={() => handleSubmit(false)}
+                disabled={submitting || !code.trim()}
+              >
+                <PlayIcon />
+                {submitting ? 'Running…' : editingId ? 'Update & Run' : 'Submit Code'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -499,6 +529,16 @@ export default function QuestDetail() {
           <a href="#">API</a>
         </div>
       </footer>
+
+      {toast && (
+        <div className="toast">
+          <CheckCircle />
+          <div>
+            <div className="toast-title">{toast.title}</div>
+            <div className="toast-sub">{toast.sub}</div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

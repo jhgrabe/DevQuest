@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Nav from '../components/Nav'
+import { useAuth } from '../state/AuthContext'
 import { getQuests } from '../state/quests'
+import { getCompletedQuestIds } from '../state/submissions'
 
 const DIFFICULTIES = ['All', 'Novice', 'Apprentice', 'Adept', 'Master']
 
@@ -24,18 +26,20 @@ const FilterIcon = () => (
 )
 
 export default function QuestBoard() {
+  const { user } = useAuth()
   const [quests, setQuests] = useState([])
+  const [completedIds, setCompletedIds] = useState(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeTopic, setActiveTopic] = useState('All')
   const [activeDifficulty, setActiveDifficulty] = useState('All')
 
   useEffect(() => {
-    getQuests()
-      .then(setQuests)
+    Promise.all([getQuests(), getCompletedQuestIds(user.id)])
+      .then(([qs, ids]) => { setQuests(qs); setCompletedIds(ids) })
       .catch(() => setError('Failed to load quests. Please refresh.'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [user.id])
 
   const topics = ['All', ...new Set(quests.map(q => q.topic).filter(Boolean))]
 
@@ -116,7 +120,7 @@ export default function QuestBoard() {
 
         {!loading && !error && (
           <div className="quest-list">
-            {filtered.map(q => <QuestCard key={q.id} quest={q} />)}
+            {filtered.map(q => <QuestCard key={q.id} quest={q} completed={completedIds.has(q.id)} />)}
           </div>
         )}
       </div>
@@ -133,16 +137,18 @@ export default function QuestBoard() {
   )
 }
 
-function QuestCard({ quest }) {
+function QuestCard({ quest, completed }) {
   const diff = (quest.difficulty ?? '').toLowerCase()
   const shortId = questShortId(quest.id)
 
   return (
-    <Link to={`/quest/${quest.id}`} className="quest-card">
+    <Link to={`/quest/${quest.id}`} className={`quest-card${completed ? ' quest-card--completed' : ''}`}>
       <div className="quest-card__head">
         <div className="quest-card__title-row">
           <span className="quest-card__status">
-            <span className="quest-card__status-dot" />
+            {completed
+              ? <CheckIcon />
+              : <span className="quest-card__status-dot" />}
           </span>
           <span className="quest-card__title">{quest.title}</span>
         </div>
@@ -158,7 +164,9 @@ function QuestCard({ quest }) {
             <span className={`chip chip-${diff}`}>{quest.difficulty}</span>
           )}
         </div>
-        <span className="quest-card__xp">+{quest.xp_reward} XP</span>
+        {completed
+          ? <span className="quest-card__completed-badge"><CheckIcon /> Completed</span>
+          : <span className="quest-card__xp">+{quest.xp_reward} XP</span>}
       </div>
     </Link>
   )
