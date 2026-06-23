@@ -88,9 +88,12 @@ export default function Login() {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="password">
-              <KeyIcon />[PASSWORD]
-            </label>
+            <div className="form-label-row">
+              <label className="form-label" htmlFor="password">
+                <KeyIcon />[PASSWORD]
+              </label>
+              <span className="form-label-link">FORGOT_PASS?</span>
+            </div>
             <input
               id="password"
               name="password"
@@ -112,15 +115,15 @@ export default function Login() {
 
           <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
             <LoginArrow />
-            {loading ? 'Authenticating…' : 'Execute_Login'}
+            {loading ? 'Authenticating…' : 'Initiate_Login'}
           </button>
         </form>
 
         <div className="auth-divider">OR</div>
 
         <p className="auth-footer">
-          No account found?{' '}
-          <Link to="/register">Initiate_Registration</Link>
+          <span className="auth-footer-label">NO_ACCOUNT_FOUND?</span>
+          <Link to="/register" className="auth-footer-link">INITIATE_REGISTRATION</Link>
         </p>
       </div>
 

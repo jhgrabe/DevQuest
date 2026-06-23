@@ -158,15 +158,15 @@ export default function Register() {
 
           <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
             <ArrowRight />
-            {loading ? 'Creating account…' : 'Create account'}
+            {loading ? 'Creating account…' : 'Create_Account'}
           </button>
         </form>
 
         <div className="auth-divider" style={{ marginTop: 20 }} />
 
         <p className="auth-footer">
-          Already have root access?{' '}
-          <Link to="/login">Login</Link>
+          <span className="auth-footer-label">ALREADY_HAVE_ROOT_ACCESS?</span>
+          <Link to="/login" className="auth-footer-link">Initiate_Login</Link>
         </p>
       </div>
     </div>
