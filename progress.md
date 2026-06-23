@@ -7,10 +7,98 @@
 
 ## Current status
 
-- **Phase:** 4 — The engine (next)
-- **Day:** Tuesday
-- **Next action:** build `execute/index.ts` — verify JWT → load test_cases → Judge0 async submit + poll → grade → update submission row → award XP on first pass. Test with curl before wiring frontend.
-- **Blockers:** none.
+- **Phase:** 7 — Deploy + Stripe (stretch)
+- **Day:** Friday
+- **Next action:** `supabase functions deploy` all functions, set production secrets, Vercel deploy, rubric checklist. Then Stripe if time allows.
+- **Blockers:** `GEMINI_API_KEY` and `GEMINI_MODEL` secrets must be set before hints work (`supabase secrets set GEMINI_API_KEY=... GEMINI_MODEL=gemini-2.0-flash`).
+
+---
+
+## 2026-06-23 — Phase 5 + 6: Gemini hints + full dynamic UI
+
+**Goal this session:** `hint/index.ts` edge function + full Cyber-Terminal UI across all pages.
+
+**Done:**
+- `supabase/functions/hint/index.ts` — verify JWT → load quest title+description → Gemini API (model from `GEMINI_MODEL` secret, key from `GEMINI_API_KEY`) → store hint on submission row → return `{ hint }`; deployed to remote
+- `src/state/submissions.js` — added `getHint(submissionId, questId, sourceCode, stderr)` via Axios to `/functions/v1/hint`
+- `src/state/profile.js` — `getProfile(userId)` and `getAllSubmissions(userId)` with quest title join
+- `src/index.css` — full Cyber-Terminal design system: CSS variables (dark palette, electric teal primary), chips, buttons, forms, cards, editor, exec output, hint panel, XP bar, rank ladder, history table
+- `index.html` → `src/main.jsx` wires up CSS import (Google Fonts for Inter + JetBrains Mono)
+- `src/components/Nav.jsx` — sticky nav: DEVQUEST logo + terminal icon, Quests/Profile links with active underline, Logout button
+- `src/pages/QuestBoard.jsx` — full redesign: topic + difficulty filter tabs, quest cards with Q-XXX mono ID, status dot, topic + difficulty chips, XP label, hover effects
+- `src/pages/QuestDetail.jsx` — full redesign: hero header with Q-ID + difficulty chip + XP + time, Objective card, styled code editor (monospace textarea, lang badge, reset toolbar), full-width submit button, Execution Output section (idle/pass/fail states, per-test pass/fail rows), AI Analysis card auto-populated on failure (loading → hint text), History list with attempt #, status dot, time, resubmit + delete actions
+- `src/pages/Profile.jsx` — full implementation: avatar, username, rank badge, XP progress bar with glow, stats grid (attempted/passed), rank ladder (current highlighted + locked), recent submissions table with quest title + status dot + time
+- `src/pages/Login.jsx` — terminal aesthetic: SYSTEM_LOGIN title, monospace field labels, EXECUTE_LOGIN button
+- `src/pages/Register.jsx` — Init Profile aesthetic: USER_ID / SYS_COMMS_LINK / AUTH_KEY labels, success state with email confirmation message
+
+**Decisions made:**
+- Hint call is async and non-blocking: execute runs first, hint fires immediately after on failure, hint failure does not surface as an error (graceful degradation)
+- `questShortId()` helper: deterministic 3-digit display ID from UUID hash (Q-NNN format, range 100-999)
+- Profile `getAllSubmissions` uses Supabase REST embedded resource join (`quests(id,title)`) — no extra API call
+- `updateSubmission` clears hint field implicitly via status reset to pending; new hint fetched after re-execute
+
+**Gotchas hit:**
+- `GEMINI_API_KEY` and `GEMINI_MODEL` not yet set as Supabase secrets — hints will return 502 until set
+
+**Open / next:**
+- Set Gemini secrets: `supabase secrets set GEMINI_API_KEY=<key> GEMINI_MODEL=gemini-2.0-flash`
+- Phase 7: deploy all functions, set all prod secrets, Vercel deploy, rubric checklist
+- Stripe donation (stretch): `donate/index.ts` + ThankYou page
+
+**Phase status:** complete → moving to Phase 7
+
+---
+
+## 2026-06-23 — Phase 3: Submissions CRUD + execute wiring
+
+**Goal this session:** all four CRUD operations via Axios, QuestBoard loads quests from DB, QuestDetail wired to execute.
+
+**Done:**
+- `src/state/quests.js` — `getQuests()`, `getQuest(id)` via Axios; excludes `test_cases` column
+- `src/state/submissions.js` — `createSubmission`, `getSubmissions`, `updateSubmission`, `deleteSubmission`, `executeSubmission` all via Axios instance
+- `QuestBoard.jsx` — fetches quest list, shows loading/error/empty states, links to `/quest/:id`
+- `QuestDetail.jsx` — quest description + textarea editor + submit flow: create pending → execute → show pass/fail per test; resubmit (patch existing row) and delete from history; 401/502 error paths surfaced with retry button
+
+**Decisions made:**
+- Update operation: "Resubmit" loads old code into editor + patches that row's source_code/status before re-running execute — demonstrates PATCH clearly
+- All 4 CRUD ops go through the Axios instance in `lib/api.js`; `supabase-js` touches nothing here
+- `test_cases` excluded from quest select query — never reaches the browser
+
+**Open / next:**
+- Phase 5: `hint/index.ts` (Gemini) — auto-hint on every failed submission
+- Phase 6: full UI polish using design/stitch screenshots
+
+**Phase status:** complete → moving to Phase 5
+
+---
+
+## 2026-06-23 — Phase 4: The engine
+
+**Goal this session:** build and prove `execute/index.ts` via curl before wiring frontend.
+
+**Done:**
+- `supabase/functions/execute/index.ts` — verify JWT → service-role load of quest test_cases → Judge0 async submit + poll → grade all test cases → update submission row → award XP on first pass (dedup check)
+- Deployed to remote: `supabase functions deploy execute`
+- Set remote secrets: `JUDGE0_BASE_URL=https://ce.judge0.com`, `FRONTEND_URL=http://localhost:5173`
+- curl test 1: correct solution → `{"passed":true,"xp_awarded":100}`, submission row status=passed, profile xp=100 ✓
+- curl test 2: second correct pass on same quest → `{"xp_awarded":0}` — no double-award ✓
+- curl test 3: wrong solution → `{"passed":false,"xp_awarded":0}`, two of three test cases failed ✓
+
+**Decisions made:**
+- Service role client used for all DB writes (test_cases load, submission update, profile XP) — never the user-scoped client for privileged data
+- Compilation error (statusId=6) short-circuits remaining test cases to avoid pointless Judge0 calls
+- XP dedup: count prior `passed` rows for same user+quest, excluding current submission_id
+- stdout stored as "Test N: <output>" per test case for readable history
+- Test user `testcurl@devquest.test` (id: f0a93073) created in remote project for future curl tests
+
+**Gotchas hit:**
+- `supabase functions serve` requires `supabase start` (local Docker) — not available; deployed to remote and tested against deployed URL instead
+
+**Open / next:**
+- Phase 3: Submissions CRUD via Axios (create/read/update/delete) — all four operations, RLS-scoped
+- Phase 4 wiring: QuestDetail calls execute, shows pass/fail result, hints on failure (Phase 5 later)
+
+**Phase status:** complete → moving to Phase 3 (CRUD) + execute wiring
 
 ---
 
