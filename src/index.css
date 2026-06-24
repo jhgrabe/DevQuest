@@ -377,10 +377,10 @@ button { cursor: pointer; font-family: inherit; }
   white-space: nowrap;
 }
 
-.chip-novice    { background: #334155; color: #e2e8f0; }
-.chip-apprentice { background: #1e40af; color: #e2e8f0; }
-.chip-adept     { background: #92400e; color: #e2e8f0; }
-.chip-master    { background: #991b1b; color: #e2e8f0; }
+.chip-novice     { background: rgba(22,163,74,0.18);  color: #4ade80; }
+.chip-apprentice { background: rgba(202,138,4,0.18);  color: #fde047; }
+.chip-adept      { background: rgba(234,88,12,0.18);  color: #fb923c; }
+.chip-master     { background: rgba(220,38,38,0.18);  color: #f87171; }
 
 .chip-topic {
   background: rgba(34, 211, 238, 0.08);
@@ -534,10 +534,10 @@ button { cursor: pointer; font-family: inherit; }
 .filter-tab.active { color: #0a0d14; border-color: var(--primary); background: var(--primary); }
 
 /* Difficulty filter tabs keep their colors when active */
-.filter-tab.active.diff-novice     { background: #334155; border-color: #334155; color: var(--text); }
-.filter-tab.active.diff-apprentice { background: #1e40af; border-color: #1e40af; color: var(--text); }
-.filter-tab.active.diff-adept      { background: #92400e; border-color: #92400e; color: var(--text); }
-.filter-tab.active.diff-master     { background: #991b1b; border-color: #991b1b; color: var(--text); }
+.filter-tab.active.diff-novice     { background: rgba(22,163,74,0.18);  border-color: #4ade80; color: #4ade80; }
+.filter-tab.active.diff-apprentice { background: rgba(202,138,4,0.18);  border-color: #fde047; color: #fde047; }
+.filter-tab.active.diff-adept      { background: rgba(234,88,12,0.18);  border-color: #fb923c; color: #fb923c; }
+.filter-tab.active.diff-master     { background: rgba(220,38,38,0.18);  border-color: #f87171; color: #f87171; }
 
 .quest-list { display: flex; flex-direction: column; gap: 10px; }
 
