@@ -110,6 +110,7 @@ export default function QuestDetail() {
   const [editingId, setEditingId] = useState(null)
   const [result, setResult] = useState(null)
   const [hint, setHint] = useState(null)
+  const [hintError, setHintError] = useState(false)
   const [hintLoading, setHintLoading] = useState(false)
   const [loadError, setLoadError] = useState(null)
   const [submitError, setSubmitError] = useState(null)
@@ -153,6 +154,7 @@ export default function QuestDetail() {
     setSubmitError(null)
     setResult(null)
     setHint(null)
+    setHintError(false)
     try {
       let subId
       if (editingId) {
@@ -184,12 +186,13 @@ export default function QuestDetail() {
 
       if (!res.passed) {
         setHintLoading(true)
+        setHintError(false)
         try {
           const firstFailed = res.results?.find(r => !r.passed)
           const h = await getHint(subId, questId, fullCode(), firstFailed?.stderr ?? '')
           setHint(h)
         } catch {
-          // hint failure is non-blocking
+          setHintError(true)
         } finally {
           setHintLoading(false)
         }
@@ -214,6 +217,7 @@ export default function QuestDetail() {
     setEditingId(sub.id)
     setResult(null)
     setHint(null)
+    setHintError(false)
     setSubmitError(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -223,6 +227,7 @@ export default function QuestDetail() {
     setEditingId(null)
     setResult(null)
     setHint(null)
+    setHintError(false)
     setSubmitError(null)
   }
 
@@ -467,10 +472,15 @@ export default function QuestDetail() {
                 <div className="hint-ai-icon"><SparkleIcon /></div>
                 <p className="hint-text">{hint}</p>
               </div>
+            ) : hintError ? (
+              <div className="hint-body">
+                <div className="hint-ai-icon"><SparkleIcon /></div>
+                <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Hint service unavailable — resubmit to try again.</p>
+              </div>
             ) : (
               <div className="hint-body">
                 <div className="hint-ai-icon"><SparkleIcon /></div>
-                <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Hint unavailable — try again after resubmitting.</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Submit your code to get an AI hint on failure.</p>
               </div>
             )}
           </div>
