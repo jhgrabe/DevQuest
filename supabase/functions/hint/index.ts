@@ -85,7 +85,7 @@ Be encouraging. Never output working code.`
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 300, temperature: 0.4 },
+          generationConfig: { maxOutputTokens: 800, temperature: 0.4 },
         }),
       },
     )
