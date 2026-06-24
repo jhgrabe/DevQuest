@@ -4,6 +4,7 @@ import Nav from '../components/Nav'
 import { useAuth } from '../state/AuthContext'
 import { getProfile, getAllSubmissions } from '../state/profile'
 import { RANKS, getRank } from '../data/ranks'
+import { createDonationSession } from '../state/donate'
 
 function timeAgo(dateStr) {
   const seconds = Math.floor((Date.now() - new Date(dateStr)) / 1000)
@@ -58,6 +59,9 @@ export default function Profile() {
   const [submissions, setSubmissions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [donateAmount, setDonateAmount] = useState('5')
+  const [donateLoading, setDonateLoading] = useState(false)
+  const [donateError, setDonateError] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -109,6 +113,28 @@ export default function Profile() {
   const progressPct = nextRank
     ? Math.min(100, Math.round(((xp - rank.minXP) / (nextRank.minXP - rank.minXP)) * 100))
     : 100
+
+  async function handleDonate(e) {
+    e.preventDefault()
+    const cents = Math.round(parseFloat(donateAmount) * 100)
+    if (!cents || cents < 100) {
+      setDonateError('Minimum donation is $1.00')
+      return
+    }
+    setDonateLoading(true)
+    setDonateError(null)
+    try {
+      const url = await createDonationSession(cents)
+      window.location.href = url
+    } catch (err) {
+      if (err.response?.status === 401) {
+        setDonateError('Session expired — please log in again.')
+      } else {
+        setDonateError('Payment service unavailable — try again shortly.')
+      }
+      setDonateLoading(false)
+    }
+  }
 
   const attempted = new Set(submissions.map(s => s.quest_id)).size
   const passed = new Set(submissions.filter(s => s.status === 'passed').map(s => s.quest_id)).size
@@ -223,6 +249,56 @@ export default function Profile() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Support card */}
+        <div className="section-card mt-16" style={{ marginTop: 16 }}>
+          <div className="section-card__header">
+            <span className="section-card__title">♥ Support DevQuest</span>
+          </div>
+          <div style={{ padding: '20px 24px' }}>
+            <p style={{ color: 'var(--text-dim)', fontSize: 13, marginBottom: 16, lineHeight: 1.6 }}>
+              DevQuest is free to play. If you've found it useful, consider buying us a coffee to help keep the servers running and fund new quests.
+            </p>
+            <form onSubmit={handleDonate} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              <div style={{ position: 'relative', flex: '0 0 auto' }}>
+                <span style={{
+                  position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
+                  color: 'var(--text-dim)', fontSize: 14, pointerEvents: 'none',
+                }}>$</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={donateAmount}
+                  onChange={e => { setDonateAmount(e.target.value); setDonateError(null) }}
+                  style={{
+                    width: 80, paddingLeft: 22, paddingRight: 8, paddingTop: 8, paddingBottom: 8,
+                    background: 'var(--surface-high)', border: '1px solid var(--border)',
+                    borderRadius: 'var(--r)', color: 'var(--text)', fontFamily: 'var(--font-mono)',
+                    fontSize: 14,
+                  }}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={donateLoading}
+                style={{
+                  background: 'var(--primary)', color: '#0f1117',
+                  border: 'none', borderRadius: 'var(--r)',
+                  padding: '8px 16px', fontWeight: 700, fontSize: 13,
+                  cursor: donateLoading ? 'not-allowed' : 'pointer',
+                  opacity: donateLoading ? 0.6 : 1,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {donateLoading ? 'Redirecting…' : 'Donate via Stripe'}
+              </button>
+            </form>
+            {donateError && (
+              <p style={{ color: 'var(--error)', fontSize: 12, marginTop: 8 }}>{donateError}</p>
+            )}
+          </div>
         </div>
 
       </div>
