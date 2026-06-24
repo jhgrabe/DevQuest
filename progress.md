@@ -7,10 +7,44 @@
 
 ## Current status
 
-- **Phase:** 7 — Deploy + Stripe (stretch)
-- **Date:** 2026-06-23 (Tuesday)
-- **Next action:** Vercel deploy, set production secrets, run rubric checklist. Stripe if time allows.
-- **Blockers:** Gemini key format needs verification (`AQ.Ab8...` may not be a valid AI Studio key — test hints in the live app and update if needed).
+- **Phase:** 7 — Deploy + Stripe ✓ COMPLETE
+- **Date:** 2026-06-24 (Wednesday)
+- **Next action:** (1) Add STRIPE_SECRET_KEY secret; (2) allowlist https://devquest-two.vercel.app in Supabase Auth → URL Configuration; (3) promote Vercel preview to production.
+- **Blockers:** Stripe not yet live (STRIPE_SECRET_KEY not set). Supabase auth redirect URL needs manual allowlist update for production domain.
+
+---
+
+## 2026-06-24 — Phase 7: Deploy + Stripe
+
+**Goal this session:** Vercel deploy, FRONTEND_URL update, Stripe donate feature.
+
+**Done:**
+- `supabase functions deploy execute` + `hint` — both redeployed to remote
+- `FRONTEND_URL` secret updated to `https://devquest-two.vercel.app`
+- Vercel first deploy — project created as `schema-solutions/devquest`, aliased to `https://devquest-two.vercel.app`
+- `supabase/functions/donate/index.ts` — verify JWT → Stripe Checkout Session (amount_cents from client, STRIPE_SECRET_KEY server-side, success → /thankyou, cancel → /profile)
+- `src/state/donate.js` — `createDonationSession(amountCents)` via Axios
+- `src/pages/Profile.jsx` — Support DevQuest card: amount input, Donate via Stripe button, inline error states
+- `src/pages/ThankYou.jsx` — styled confirmation page
+- `supabase functions deploy donate` — deployed to remote
+- Build passes clean
+
+**Decisions made:**
+- Donate form lives on Profile page (not Nav) — natural location, less clutter in header
+- Amount input is free-entry (dollars), converted to cents before POST
+- Minimum $1.00 enforced both client-side and in the Edge Function (≥ 100 cents)
+- No Stripe publishable key needed client-side — the session URL comes back from the function
+
+**Gotchas hit:**
+- Extra `</div>` from edit insertion broke JSX structure; fixed before commit
+
+**Open / next:**
+- Manual: set `STRIPE_SECRET_KEY` via `supabase secrets set STRIPE_SECRET_KEY=sk_test_...`
+- Manual: add `https://devquest-two.vercel.app/**` to Supabase → Auth → URL Configuration → Redirect URLs
+- Manual: promote Vercel preview to production (`vercel --prod` or via Vercel dashboard)
+- Manual: test full game loop on production URL
+
+**Phase status:** complete → project shipped
 
 ---
 
