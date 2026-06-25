@@ -7,10 +7,36 @@
 
 ## Current status
 
-- **Phase:** 7 — Deploy + Stripe ✓ COMPLETE
-- **Date:** 2026-06-24 (Wednesday)
-- **Next action:** (1) Add STRIPE_SECRET_KEY secret; (2) allowlist https://devquest-two.vercel.app in Supabase Auth → URL Configuration; (3) promote Vercel preview to production.
-- **Blockers:** Stripe not yet live (STRIPE_SECRET_KEY not set). Supabase auth redirect URL needs manual allowlist update for production domain.
+- **Phase:** 7 — Deploy + Stripe ✓ COMPLETE + bug fixes applied 2026-06-25
+- **Date:** 2026-06-25
+- **Next action:** (1) Add STRIPE_SECRET_KEY secret to enable donate button; (2) verify Supabase Auth → URL Configuration has https://devquest-two.vercel.app/** allowlisted for email confirmation redirects.
+- **Blockers:** Stripe not yet live (STRIPE_SECRET_KEY not set). Supabase auth redirect URL may need production domain added.
+
+---
+
+## 2026-06-25 — Bug fixes + deployment repair
+
+**Goal this session:** Verify rubric, fix broken Vercel deploy, hunt bugs.
+
+**Done:**
+- Root cause of broken Vercel deploy found: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` were never set as Vercel env vars — build embedded empty strings. Added both and redeployed.
+- `supabase/functions/_shared/auth.ts` — 401 responses from `requireAuth` were missing CORS headers; browser got a CORS failure instead of seeing the 401 status. Fixed by importing `getCorsHeaders` and spreading into all thrown 401 headers. Redeployed all three functions.
+- `QuestDetail.jsx` / `Profile.jsx` / `QuestBoard.jsx` — on 401 now navigate to `/login` (redirect) instead of showing inline error, satisfying the rubric 401→redirect requirement.
+- `Confirm.jsx` — applied cyber-terminal design to loading and error states (was plain unstyled HTML).
+- `QuestBoard.jsx` difficulty filter — committed the existing `.toLowerCase()` fix that made filter tabs work with lowercase DB values.
+- Footer year corrected: 2024 → 2026 across QuestBoard, QuestDetail, Profile.
+
+**Rubric status:** All 4 requirements confirmed green:
+1. Auth (register/login/logout/email confirm + protected routes) ✓
+2. Submissions CRUD via Axios with RLS ✓
+3. Dynamic UI (filters, live results, XP bar, history) ✓
+4. Error handling with real HTTP codes + UI states ✓
+
+**Open / next:**
+- `supabase secrets set STRIPE_SECRET_KEY=sk_test_...` to enable donation button
+- Supabase Auth → URL Configuration: confirm https://devquest-two.vercel.app/** is in Redirect URLs for production email confirmation
+
+**Phase status:** complete
 
 ---
 
