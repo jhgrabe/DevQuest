@@ -112,6 +112,7 @@ export default function QuestDetail() {
   const [hint, setHint] = useState(null)
   const [hintError, setHintError] = useState(false)
   const [hintLoading, setHintLoading] = useState(false)
+  const [lastHintContext, setLastHintContext] = useState(null)
   const [loadError, setLoadError] = useState(null)
   const [submitError, setSubmitError] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -149,12 +150,27 @@ export default function QuestDetail() {
     setTimeout(() => setToast(null), 4000)
   }
 
+  async function fetchHint({ subId, questId: qId, sourceCode, stderr }) {
+    setHintLoading(true)
+    setHintError(false)
+    setHint(null)
+    try {
+      const h = await getHint(subId, qId, sourceCode, stderr)
+      setHint(h)
+    } catch {
+      setHintError(true)
+    } finally {
+      setHintLoading(false)
+    }
+  }
+
   async function handleSubmit(refine = false) {
     setSubmitting(true)
     setSubmitError(null)
     setResult(null)
     setHint(null)
     setHintError(false)
+    setLastHintContext(null)
     try {
       let subId
       if (editingId) {
@@ -185,17 +201,10 @@ export default function QuestDetail() {
       setSubmissions(subs)
 
       if (!res.passed) {
-        setHintLoading(true)
-        setHintError(false)
-        try {
-          const firstFailed = res.results?.find(r => !r.passed)
-          const h = await getHint(subId, questId, fullCode(), firstFailed?.stderr ?? '')
-          setHint(h)
-        } catch {
-          setHintError(true)
-        } finally {
-          setHintLoading(false)
-        }
+        const firstFailed = res.results?.find(r => !r.passed)
+        const ctx = { subId, questId, sourceCode: fullCode(), stderr: firstFailed?.stderr ?? '' }
+        setLastHintContext(ctx)
+        await fetchHint(ctx)
       }
     } catch (e) {
       if (e.response?.status === 401) {
@@ -219,6 +228,7 @@ export default function QuestDetail() {
     setResult(null)
     setHint(null)
     setHintError(false)
+    setLastHintContext(null)
     setSubmitError(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -229,6 +239,7 @@ export default function QuestDetail() {
     setResult(null)
     setHint(null)
     setHintError(false)
+    setLastHintContext(null)
     setSubmitError(null)
   }
 
@@ -476,7 +487,20 @@ export default function QuestDetail() {
             ) : hintError ? (
               <div className="hint-body">
                 <div className="hint-ai-icon"><SparkleIcon /></div>
-                <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Hint service unavailable — resubmit to try again.</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 10 }}>Hint service unavailable — Gemini may be busy.</p>
+                {lastHintContext && (
+                  <button
+                    onClick={() => fetchHint(lastHintContext)}
+                    style={{
+                      background: 'none', border: '1px solid var(--border)',
+                      borderRadius: 'var(--r)', padding: '4px 10px',
+                      color: 'var(--text-dim)', fontSize: 12, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 5,
+                    }}
+                  >
+                    <RefreshIcon style={{ width: 12, height: 12 }} /> Retry hint
+                  </button>
+                )}
               </div>
             ) : (
               <div className="hint-body">
