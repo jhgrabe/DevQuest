@@ -21,18 +21,24 @@ export default function Confirm() {
 
   if (error) {
     return (
-      <div>
-        <h1>Confirmation failed</h1>
-        <p role="alert" style={{ color: 'red' }}>{error}</p>
-        <Link to="/register">Back to register</Link>
+      <div className="auth-bg">
+        <div className="auth-wordmark">DEVQUEST</div>
+        <div className="auth-card" style={{ textAlign: 'center' }}>
+          <h1 className="auth-title" style={{ color: 'var(--error)' }}>Confirmation Failed</h1>
+          <p className="auth-subtitle" style={{ color: 'var(--text-dim)', marginBottom: 24 }}>{error}</p>
+          <Link to="/register" className="btn btn-ghost btn-full">Back to Register</Link>
+        </div>
       </div>
     )
   }
 
   return (
-    <div>
-      <h1>Confirming your account…</h1>
-      <p>Please wait.</p>
+    <div className="auth-bg">
+      <div className="auth-wordmark">DEVQUEST</div>
+      <div className="auth-card" style={{ textAlign: 'center' }}>
+        <h1 className="auth-title">Confirming…</h1>
+        <p className="auth-subtitle">Verifying your account link</p>
+      </div>
     </div>
   )
 }

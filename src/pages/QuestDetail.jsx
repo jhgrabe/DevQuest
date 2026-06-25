@@ -128,10 +128,10 @@ export default function QuestDetail() {
         setSubmissions(subs)
       } catch (e) {
         if (e.response?.status === 401) {
-          setLoadError('Session expired — please log in again.')
-        } else {
-          setLoadError('Failed to load quest.')
+          navigate('/login', { replace: true })
+          return
         }
+        setLoadError('Failed to load quest.')
       } finally {
         setLoading(false)
       }
@@ -199,7 +199,8 @@ export default function QuestDetail() {
       }
     } catch (e) {
       if (e.response?.status === 401) {
-        setSubmitError('Session expired — please log in again.')
+        navigate('/login', { replace: true })
+        return
       } else if (e.response?.status === 502) {
         setSubmitError('Judge is busy — please retry.')
       } else if (e.response?.status === 422) {
@@ -532,7 +533,7 @@ export default function QuestDetail() {
       </div>
 
       <footer className="site-footer">
-        © 2024 DEVQUEST_OS // ROOT_ACCESS_GRANTED
+        © 2026 DEVQUEST_OS // ROOT_ACCESS_GRANTED
         <div className="site-footer__links">
           <a href="#">Documentation</a>
           <a href="#">System Status</a>

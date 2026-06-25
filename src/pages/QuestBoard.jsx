@@ -37,7 +37,13 @@ export default function QuestBoard() {
   useEffect(() => {
     Promise.all([getQuests(), getCompletedQuestIds(user.id)])
       .then(([qs, ids]) => { setQuests(qs); setCompletedIds(ids) })
-      .catch(() => setError('Failed to load quests. Please refresh.'))
+      .catch(e => {
+        if (e.response?.status === 401) {
+          window.location.replace('/login')
+          return
+        }
+        setError('Failed to load quests. Please refresh.')
+      })
       .finally(() => setLoading(false))
   }, [user.id])
 
@@ -45,7 +51,7 @@ export default function QuestBoard() {
 
   const filtered = quests.filter(q => {
     const topicOk = activeTopic === 'All' || q.topic === activeTopic
-    const diffOk = activeDifficulty === 'All' || q.difficulty === activeDifficulty
+    const diffOk = activeDifficulty === 'All' || q.difficulty === activeDifficulty.toLowerCase()
     return topicOk && diffOk
   })
 
@@ -126,7 +132,7 @@ export default function QuestBoard() {
       </div>
 
       <footer className="site-footer">
-        © 2024 DEVQUEST_OS // ROOT_ACCESS_GRANTED
+        © 2026 DEVQUEST_OS // ROOT_ACCESS_GRANTED
         <div className="site-footer__links">
           <a href="#">Documentation</a>
           <a href="#">System Status</a>

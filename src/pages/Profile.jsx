@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Nav from '../components/Nav'
 import { useAuth } from '../state/AuthContext'
 import { getProfile, getAllSubmissions } from '../state/profile'
@@ -55,6 +55,7 @@ const HistoryIcon = () => (
 
 export default function Profile() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
   const [submissions, setSubmissions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -75,10 +76,10 @@ export default function Profile() {
         setSubmissions(subs)
       } catch (e) {
         if (e.response?.status === 401) {
-          setError('Session expired — please log in again.')
-        } else {
-          setError('Failed to load profile.')
+          navigate('/login', { replace: true })
+          return
         }
+        setError('Failed to load profile.')
       } finally {
         setLoading(false)
       }
@@ -304,7 +305,7 @@ export default function Profile() {
       </div>
 
       <footer className="site-footer">
-        © 2024 DEVQUEST_OS // ROOT_ACCESS_GRANTED
+        © 2026 DEVQUEST_OS // ROOT_ACCESS_GRANTED
         <div className="site-footer__links">
           <a href="#">Documentation</a>
           <a href="#">System Status</a>
