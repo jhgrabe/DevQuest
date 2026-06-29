@@ -97,10 +97,32 @@ Deno.serve(async (req: Request) => {
       )
     }
 
+    if (source_code.length > 50_000) {
+      return new Response(
+        JSON.stringify({ error: 'Source code exceeds maximum allowed length (50 KB)' }),
+        { status: 400, headers: { 'Content-Type': 'application/json', ...ch } },
+      )
+    }
+
     const serviceClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
+
+    // Verify submission belongs to the authenticated user before executing
+    const { data: ownedSub } = await serviceClient
+      .from('submissions')
+      .select('id')
+      .eq('id', submission_id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!ownedSub) {
+      return new Response(JSON.stringify({ error: 'Submission not found or access denied' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json', ...ch },
+      })
+    }
 
     const { data: quest, error: questError } = await serviceClient
       .from('quests')

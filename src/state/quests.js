@@ -8,6 +8,6 @@ export async function getQuests() {
 }
 
 export async function getQuest(id) {
-  const res = await api.get(`/rest/v1/quests?select=${QUEST_FIELDS}&id=eq.${id}`)
+  const res = await api.get(`/rest/v1/quests?select=${QUEST_FIELDS}&id=eq.${encodeURIComponent(id)}`)
   return res.data[0] ?? null
 }

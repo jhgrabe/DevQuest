@@ -52,6 +52,10 @@ export default function Register() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters.')
+      return
+    }
     setLoading(true)
     const result = await register(form.email, form.password, form.username)
     setLoading(false)
@@ -145,7 +149,7 @@ export default function Register() {
               value={form.password}
               onChange={handleChange}
               required
-              minLength={6}
+              minLength={8}
               autoComplete="new-password"
             />
           </div>

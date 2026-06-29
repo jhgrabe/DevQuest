@@ -13,14 +13,14 @@ export async function createSubmission({ userId, questId, sourceCode, languageId
 
 export async function getSubmissions(questId) {
   const res = await api.get(
-    `/rest/v1/submissions?quest_id=eq.${questId}&select=${SUB_FIELDS}&order=created_at.desc`,
+    `/rest/v1/submissions?quest_id=eq.${encodeURIComponent(questId)}&select=${SUB_FIELDS}&order=created_at.desc`,
   )
   return res.data
 }
 
 export async function updateSubmission(id, { sourceCode }) {
   const res = await api.patch(
-    `/rest/v1/submissions?id=eq.${id}`,
+    `/rest/v1/submissions?id=eq.${encodeURIComponent(id)}`,
     { source_code: sourceCode, status: 'pending', stdout: null, stderr: null },
     { headers: { Prefer: 'return=representation' } },
   )
@@ -28,7 +28,7 @@ export async function updateSubmission(id, { sourceCode }) {
 }
 
 export async function deleteSubmission(id) {
-  await api.delete(`/rest/v1/submissions?id=eq.${id}`)
+  await api.delete(`/rest/v1/submissions?id=eq.${encodeURIComponent(id)}`)
 }
 
 export async function executeSubmission(questId, submissionId, sourceCode, refine = false) {
@@ -43,7 +43,7 @@ export async function executeSubmission(questId, submissionId, sourceCode, refin
 
 export async function getCompletedQuestIds(userId) {
   const res = await api.get(
-    `/rest/v1/submissions?user_id=eq.${userId}&status=eq.passed&select=quest_id`,
+    `/rest/v1/submissions?user_id=eq.${encodeURIComponent(userId)}&status=eq.passed&select=quest_id`,
   )
   return new Set(res.data.map(s => s.quest_id))
 }
